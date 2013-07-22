@@ -1,0 +1,27 @@
+{% block before_main %}{% endblock %}
+
+{% block main %}
+	{% if (pages > 1) %}
+    <ul>
+		{% for p in pages_array %}
+			{% set pageLen = p|length %}
+			{% set p = p[0] %}
+			<li{% if (page == p) %} class="active"{% endif %}>
+				{% if (pageLen > 1) %}
+				<a href="{{ makeUrl({page_property: p}) }}">
+					{% if (page == p) %}
+						<b>{{ p }}</b>
+					{% else %}
+						{{ p }}
+					{% endif %}
+				</a>
+				{% else %}
+					<a href="javascript:void(0);">{{ p }}</a>
+				{% endif %}
+			</li>
+		{% endfor %}
+    </ul>
+	{% endif %}
+{% endblock %}
+
+{% block after_main %}{% endblock %}

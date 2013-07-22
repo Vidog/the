@@ -1,0 +1,72 @@
+<?php
+
+require __DIR__ . '/The/bootstrap.php';
+
+use The\Core\Application;
+use The\Core\Util;
+use The\Core\CLI;
+
+$namespace = CLI::getArgument(1);
+$applicationClass = '\The\App\\' . $namespace . '\Application';
+$app = new $applicationClass($namespace, 'dev', true, dirname(__FILE__) . '/The/');
+
+$command = CLI::getArgument(2);
+$cmdEx = explode(':', $command);
+$cmd = $cmdEx[0];
+unset($cmdEx[0]);
+$cmdExM = implode(':', $cmdEx);
+$cmdMethod = implode('',
+	array_map(function($v)
+		{
+		    static $i = 0;
+		    $i++;
+		    return $i == 1 ? strtolower($v) : ucfirst($v);
+		}, explode('_', $cmdEx[1])));
+if (!$cmdMethod)
+{
+    $cmdMethod = 'run';
+}
+else
+{
+    $cmdMethod .= 'Action';
+}
+
+if (!$cmd)
+{
+    echo CLI::out('No command provided', CLI::OUT_ERROR);
+    exit;
+}
+
+$commandClass = implode('',
+	array_map(function($v)
+		{
+		    return ucfirst($v);
+		}, explode('_', $cmd)));
+$className = $app->getClassName($commandClass, 'Command');
+
+if (!class_exists($className))
+{
+    echo CLI::out('No such command "' . $cmd . '"', CLI::OUT_ERROR);
+    exit;
+}
+
+$command = new $className($app);
+
+if (!method_exists($command, $cmdMethod))
+{
+    echo CLI::out('No such method "' . $cmdExM . '" for command "' . $cmd . '"',
+	    CLI::OUT_ERROR);
+    exit;
+}
+
+try
+{
+    $r = $command->$cmdMethod();
+}
+catch (\Exception $e)
+{
+    echo CLI::out('Error: ' . $e->getMessage(), CLI::OUT_ERROR);
+    exit;
+}
+
+Util::pr($r);

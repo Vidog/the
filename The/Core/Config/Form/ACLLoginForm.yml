@@ -1,0 +1,15 @@
+name: ACLLoginForm
+method: POST
+field_groups:
+	_default:
+		caption: Авторизация
+		fields:
+			_login:
+				type: String
+				caption: Логин
+			_password:
+				type: Password
+				caption: Пароль
+			_remember_me:
+				type: Boolean
+				caption: Запомнить меня

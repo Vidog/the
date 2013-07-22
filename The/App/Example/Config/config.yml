@@ -1,0 +1,56 @@
+# acl:
+# 	users:
+# 		guest:
+# 			class: GuestUser
+# 		user:
+# 			class: UserUser
+# 		admin:
+# 			class: AdminUser
+# 	types:
+# 		user:
+# 			provider: user
+# 			login_route: _login
+# 			login_route_params: []
+# 			logout_route: _logout
+# 			logout_route_params: []
+# 		admin:
+# 			provider: admin
+# 			login_route: _admin_login
+# 			login_route_params: []
+# 			logout_route: _admin_logout
+# 			logout_route_params: []
+# 	providers:
+# 		user:
+# 			class: User
+# 			user: user
+# 			settings:
+# 		admin:
+# 			class: Admin
+# 			user: admin
+# 			settings:
+
+services:
+	Test:
+		class_name: \The\App\Example\Service\TestService
+
+routing:
+	prefix_path: /
+	routes:
+		_index:
+			pattern: /
+			callback: [Test, foo]
+		bar:
+			pattern: /bar/{test}
+			requirements:
+				test: \d+
+			defaults:
+				test: 100
+			callback: [Test, bar]
+		test:
+			pattern: /test
+			callback: [Test, test]
+
+settings:
+	a: 1
+	b: 2
+	c: 3

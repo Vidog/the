@@ -1,0 +1,19 @@
+name: TestForm
+method: POST
+field_groups:
+	field_group_1:
+		caption: My field group 1
+		fields:
+			a:
+				type: String
+				caption: Field A
+				default_value: aaa
+			b:
+				type: RepositorySelect
+				caption: Mobile Vendors
+				params:
+					repository: Test
+					method: getMobileVendors
+					fields:
+						value: id
+						caption: title

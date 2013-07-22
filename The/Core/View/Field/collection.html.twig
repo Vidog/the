@@ -1,0 +1,5 @@
+<div id="collection_{{ collection.getInputname() }}">
+{% for subFieldName, subField in collection.getFields() %}
+<div style="display: inline-block;"><label>{{ subField|raw }}</label></div>
+{% endfor %}
+</div>

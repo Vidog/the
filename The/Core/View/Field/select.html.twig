@@ -1,0 +1,82 @@
+{% if (field.getAutocomplete()) %}
+	<input type="text" name="{{ field.getName() }}_autocomplete" id="{{ field.getAttribute('id') }}_autocomplete" value="{{ field.getValueTitle() }}" />
+	<input type="hidden" name="{{ field.getName() }}" id="{{ field.getAttribute('id') }}" value="{{ field.getValue() }}" />
+	<div id="{{ field.getAttribute('id') }}_ac_items" style="display: none;">
+		<ul>
+
+		</ul>
+	</div>
+	<script>
+		var lastACValue_{{ field.getName() }} = false;
+
+		$(document).ready(function()
+		{
+			var onChangeEvent_{{ field.getName() }} = function()
+			{
+				var val = $(this).val();
+				var len = val.length;
+				if(len >= 3)
+				{
+					lastACValue_{{ field.getName() }} = val;
+					ajaxSend('{{ route("_system_autocomplete") }}', {form: '{{ field.getForm().getName() }}', field: '{{ field.getName() }}', data: $('form#{{ field.getForm().getAttribute("id") }}').serialize(), value: val}, function(d)
+					{
+						var lastVal = lastACValue_{{ field.getName() }};
+						if(lastVal == d.value)
+						{
+							var i = 0;
+
+							for(var k in d.values)
+							{
+								i += 1;
+								break;
+							}
+							
+							var div = $('#{{ field.getAttribute("id") }}_ac_items');
+
+							div.css('border', '1px solid red');
+
+							if(i > 0)
+							{
+								var ul = div.find('ul');
+								ul.find('li').remove();
+								for(var k in d.values)
+								{
+									var v = d.values[k];
+									var li = $('<li/>').appendTo(ul);
+									var a = $('<a/>').appendTo(li);
+									a.attr('href', '#');
+									a.attr('data-value', k);
+									a.click(function()
+									{
+										var vl = $(this).attr('data-value');
+										$('#{{ field.getAttribute("id") }}').val(vl);
+										$('#{{ field.getAttribute("id") }}_autocomplete').val($(this).html());
+										$('#{{ field.getAttribute("id") }}_ac_items').slideUp();
+										return false;
+									});
+									a.html( v );
+								}
+								div.slideDown();
+							}else
+							{
+								div.slideUp();
+							}
+						}
+					});
+				}
+			};
+
+			var obj = $('#{{ field.getAttribute("id") }}_autocomplete');
+
+			obj.keyup(onChangeEvent_{{ field.getName() }});
+			//obj.blur(onChangeEvent_{{ field.getName() }});
+		});
+	</script>
+{% else %}
+	{{ field.openTag() }}
+	{% set val = field.getValue() %}
+	{% for value, caption in field.getValues() %}
+	<option value="{{ value }}"{% if(val == value) %} selected="selected"{% endif %}>{{ caption }}</option>
+	{% endfor %}
+	{{ field.closeTag() }}
+{% endif %}

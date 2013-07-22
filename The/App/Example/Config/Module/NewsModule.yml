@@ -1,0 +1,53 @@
+---
+name: NewsModule
+table_name: news
+model_name: News
+fields:
+  id:
+    type: Integer
+    caption: id
+  title:
+    type: String
+    caption: title
+  text:
+    type: Editor
+    caption: text
+  created_at:
+    type: DateTime
+    caption: created_at
+list_actions: []
+element_actions: []
+element_multiple_actions: []
+sorting_fields:
+- id
+- title
+- text
+- created_at
+actions:
+  list:
+    fields:
+    - id
+    - title
+    - text
+    - created_at
+  element:
+    fields:
+    - id
+    - title
+    - text
+    - created_at
+  create:
+    fields:
+    - id
+    - title
+    - text
+    - created_at
+    auto_value: []
+  update:
+    fields:
+    - id
+    - title
+    - text
+    - created_at
+    auto_value: []
+...

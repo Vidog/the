@@ -1,0 +1,93 @@
+{% block before_main %}{% endblock %}
+
+{% block open_tag %}
+	{{ fieldGroup.openTag() }}
+{% endblock %}
+
+{% block title %}
+	{% if (fieldGroup.getCaption()) %}
+		<legend>{{ fieldGroup.getCaption() }}</legend>
+	{% endif %}
+{% endblock %}
+
+{% block main %}
+	{% for fieldName, field in fieldGroup.getFields() %}
+		{% set fieldType = field|type %}
+		{% set isRepeated = (fieldType == 'array' || field.getIsRepeated()) %}
+
+		{% if (isRepeated) %}
+			{% set fieldID = field[0].getIdAttribute() %}
+			{% set fieldCaption = field[0].getCaption() %}
+			{% set fieldInputName = field[0].getInputName() %}
+			{% set fieldBeforeText = field[0].getBeforeText() %}
+			{% set fieldAfterText = field[0].getAfterText() %}
+			{% set fieldHelpText = field[0].getHelpText() %}
+			{% set fieldWithoutCaption = field[0].getIsWithoutCaption() %}
+			{% set fieldInnerCaption = field[0].getIsInnerCaption() %}
+			{% set fieldHasErrors = field[0].hasErrors() %}
+		{% else %}
+			{% set fieldID = field.getIdAttribute() %}
+			{% set fieldCaption = field.getCaption() %}
+			{% set fieldInputName = field.getInputName() %}
+			{% set fieldBeforeText = field.getBeforeText() %}
+			{% set fieldAfterText = field.getAfterText() %}
+			{% set fieldHelpText = field.getHelpText() %}
+			{% set fieldWithoutCaption = field.getIsWithoutCaption() %}
+			{% set fieldInnerCaption = field.getIsInnerCaption() %}
+			{% set fieldHasErrors = field.hasErrors() %}
+		{% endif %}
+
+		<div class="control-group{% if(fieldHasErrors) %} error{% elseif(fieldGroup.getForm().isSubmitted()) %} success{% endif %}">
+			{% if (!fieldWithoutCaption) %}
+				<label class="control-label" for="{{ fieldID }}">
+					{{ fieldCaption }}
+				</label>
+			{% endif %}
+			<div class="controls" id="block_{{ fieldInputName }}">
+				{% if (fieldBeforeText) %}
+					<span class="help-block muted">{{ fieldBeforeText }}</span>
+				{% endif %}
+
+				{% if (fieldInnerCaption) %}
+				<label class="checkbox inline" for="{{ fieldID }}">
+					{% endif %}
+					{% if (isRepeated) %}
+						{% for fieldIndex, repeatedField in field %}
+							<div class="fields">
+                                {% if (repeatedField.getIsRemoveAllowed()) %}
+								<div class="repeated_input_button" style="display: inline-block;">
+									<button onclick="removeInput($(this)); return false;">X</button>
+								</div>
+                                {% endif %}
+								<div style="display: inline-block;">{{ repeatedField|raw }}</div>
+							</div>
+						{% endfor %}
+                        {% if (repeatedField.getIsAddAllowed()) %}
+						<p><span data-block="block_{{ fieldInputName }}" onclick="cloneInput($(this)); return false;">Add</span>
+                        {% endif %}
+						</p>
+					{% else %}
+						{{ field|raw }}
+					{% endif %}
+					{% if (fieldInnerCaption) %}
+					&nbsp;{{ fieldCaption }}
+				</label>
+				{% endif %}
+
+				{% if (fieldHelpText) %}
+					<span class="help-inline">{{ fieldHelpText }}</span>
+				{% endif %}
+
+				{% if (fieldAfterText) %}
+					<span class="help-block muted">{{ fieldAfterText }}</span>
+				{% endif %}
+			</div>
+		</div>
+	{% endfor %}
+{% endblock %}
+
+			{% block close_tag %}
+				{{ fieldGroup.closeTag() }}
+			{% endblock %}
+
+			{% block after_main %}{% endblock %}

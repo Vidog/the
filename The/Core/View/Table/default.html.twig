@@ -1,0 +1,207 @@
+{% block list_actions %}
+	{% if (table.getListActions()|length > 0) %}
+		<div class="btn-group table_{{ table.getName() }}_list_actions" style="padding-bottom: 8px;">
+			{% for actionName, action in table.getListActions() %}
+				{% set act = table.buildAction('list', actionName, action) %}
+				{{ act.script|raw }}
+				<button class="btn btn-primary table_{{ table.getName() }}_multiple_actions" onclick="{{ act.action }}">{{ act.caption }}</button>
+			{% endfor %}
+		</div>
+	{% endif %}
+{% endblock %}
+
+{% block output_before %}
+	{{ table.outputBefore()|raw }}
+{% endblock %}
+
+{% block multiple_actions_script %}
+	{% if (table.getElementMultipleActions()|length > 0) %}
+		<script>
+			var table_{{ table.getName() }}_ids = [];
+
+			function table_{{ table.getName() }}_selectAll()
+			{
+				$('.table_{{ table.getName() }}').attr('checked', 'checked');
+				var obj = $('.table_{{ table.getName() }}')[0];
+				table_{{ table.getName() }}_selections();
+			}
+
+			function table_{{ table.getName() }}_deselectAll()
+			{
+				$('.table_{{ table.getName() }}').removeAttr('checked');
+				table_{{ table.getName() }}_selections();
+			}
+
+			function table_{{ table.getName() }}_makeSelection(obj)
+			{
+				var check = $(obj).find('.table_{{ table.getName() }}');
+				if(check.is(':checked'))
+				{
+					check.removeAttr('checked');
+				}else
+				{
+					check.attr('checked', 'checked');
+				}
+				table_{{ table.getName() }}_selections();
+			}
+
+			function table_{{ table.getName() }}_selections() {
+				if ($('.table_{{ table.getName() }}').is(':checked')) {
+					$('.table_{{ table.getName() }}_multiple_actions').slideDown();
+				} else {
+					$('.table_{{ table.getName() }}_multiple_actions').slideUp();
+				}
+
+				table_{{ table.getName() }}_ids = [];
+
+				$('.table_{{ table.getName() }}:checked').each(function () {
+					table_{{ table.getName() }}_ids.push($(this).val());
+				});
+			}
+		</script>
+	{% endif %}
+{% endblock %}
+
+{% block multiple_actions_top %}
+	{% if (table.getElementMultipleActions()|length > 0) %}
+	<p>
+		<div class="btn-group" style="padding-bottom: 8px;">
+			<button class="btn" onclick="table_{{ table.getName() }}_selectAll();">Выбрать все</button>
+			<button class="btn" onclick="table_{{ table.getName() }}_deselectAll();">Снять все</button>
+			{% for actionName, action in table.getElementMultipleActions() %}
+				{% set act = table.buildAction('element_multiple', actionName, action) %}
+				{{ act.script|raw }}
+				<button class="btn btn-primary table_{{ table.getName() }}_multiple_actions" style="display: none;" onclick="{{ act.action }}">{{ act.caption }}</button>
+			{% endfor %}
+		</div>
+	</p>
+	{% endif %}
+{% endblock %}
+
+{% block before_main %}{% endblock %}
+
+{% block open_tag %}
+	{{ table.openTag() }}
+{% endblock %}
+
+{% block main %}
+	{% if (table.getIsHorizontal()) %}
+		<tbody>
+			{% for fieldName, field in table.getRows()[0] %}
+				<tr>
+					<th>{{ field.getCaption() }}</th>
+					{% if(field.getIsDisplayValueRaw()) %}
+						<td>{{ field.getDisplayValue()|raw }}</td>
+					{% else %}
+						<td>{{ field.getDisplayValue() }}</td>
+					{% endif %}
+				</tr>
+			{% endfor %}
+		</tbody>
+	{% else %}
+		<thead>
+			<tr>
+				{% if (table.getElementMultipleActions()|length > 0) %}
+					<th>
+						#
+					</th>
+				{% endif %}
+				{% for fieldName, field in table.getFields() %}
+					<th>
+						{% if (table.hasSortingField(fieldName)) %}
+							{% if (table.getCurrentSortingField() == fieldName) %}
+								{% if (table.getCurrentSortingDirection() == 'ASC') %}
+									{% set dir = 'desc' %}
+								{% else %}
+									{% set dir = 'asc' %}
+								{% endif %}
+								{% set add1 = '<b>' %}
+								{% set add2 = '</b>' %}
+								{% set arrow = '<span>' ~ (dir == 'asc' ? '&darr;' : '&uarr;') ~ '</span>' %}
+							{% else %}
+								{% set dir = 'asc' %}
+								{% set add1 = '' %}
+								{% set add2 = '' %}
+								{% set arrow = '' %}
+							{% endif %}
+							<a href="{{ table.makeUrl({table.getPropertyName('sorting_field'): fieldName, table.getPropertyName('sorting_direction'): dir}) }}">
+								{{ arrow|raw }}
+								{{ add1|raw }}
+								{{ field.getCaption() }}
+								{{ add2|raw }}
+							</a>
+						{% else %}
+							{{ field.getCaption() }}
+						{% endif %}
+					</th>
+				{% endfor %}
+				{% if (table.getElementActions()|length > 0) %}
+					<th>
+						Действия
+					</th>
+				{% endif %}
+			</tr>
+		</thead>
+		<tbody>
+			{% for rowIndex, row in table.getRows() %}
+				<tr{% if (table.getElementMultipleActions()|length > 0) %} onclick="table_{{ table.getName() }}_makeSelection(this);"{% endif %}>
+					{% if (table.getElementMultipleActions()|length > 0) %}
+						<td>
+							<input type="checkbox" name="table_{{ table.getName() }}[]"
+								   class="table_{{ table.getName() }}"
+								   id="table_{{ table.getName() }}_{{ row.id.getValue() }}"
+								   value="{{ row.id.getValue() }}"
+								   onchange="table_{{ table.getName() }}_selections();"/>
+						</td>
+					{% endif %}
+					{% for fieldName, field in row %}
+						{% if(field.getIsDisplayValueRaw()) %}
+							<td>{{ field.getDisplayValue()|raw }}</td>
+						{% else %}
+							<td>{{ field.getDisplayValue() }}</td>
+						{% endif %}
+					{% endfor %}
+					{% if (table.getElementActions()|length > 0) %}
+						<td>
+							{% set checkedElements = table.getCheckedElementActions(rowIndex) %}
+							{% if (checkedElements|length > 0) %}
+								<ul class="nav nav-list">
+									{% for act in checkedElements %}
+										{{ act.script|raw }}
+										<li><a href="javascript:void(0);" onclick="{{ act.action }}">{{ act.caption }}</a></li>
+									{% endfor %}
+								</ul>
+							{% endif %}
+						</td>
+					{% endif %}
+				</tr>
+			{% endfor %}
+		</tbody>
+	{% endif %}
+{% endblock %}
+
+{% block close_tag %}
+	{{ table.closeTag() }}
+{% endblock %}
+
+{% block after_main %}{% endblock %}
+
+{% block multiple_actions_bottom %}
+	{% if (table.getElementMultipleActions()|length > 0) %}
+	<p>
+		<div class="btn-group">
+			<button class="btn" onclick="table_{{ table.getName() }}_selectAll();">Выбрать все</button>
+			<button class="btn" onclick="table_{{ table.getName() }}_deselectAll();">Снять все</button>
+			{% for actionName, action in table.getElementMultipleActions() %}
+				{% set act = table.buildAction('element_multiple', actionName, action) %}
+				{{ act.script|raw }}
+				<button class="btn btn-primary table_{{ table.getName() }}_multiple_actions" style="display: none;" onclick="{{ act.action }}">{{ act.caption }}</button>
+			{% endfor %}
+		</div>
+	</p>
+	{% endif %}
+{% endblock %}
+
+{% block output_after %}
+	{{ table.outputAfter()|raw }}
+{% endblock %}

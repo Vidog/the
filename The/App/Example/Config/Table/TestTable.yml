@@ -1,0 +1,25 @@
+name: TestTabl
+eelement_actions:
+	add_item:
+		caption: 'Добавить'
+		type: js
+		url: alert(^DATA:id)
+element_multiple_actions:
+	add_items:
+		caption: 'Добавить'
+		type: js
+		url: alert()
+sorting_fields:
+	- id
+	- title
+	- date
+fields:
+	id:
+		type: String
+		caption: ID
+	title:
+		type: String
+		caption: Title
+	date:
+		type: String
+		caption: Date

@@ -1,0 +1,45 @@
+<div class="input-append">
+	<span style="display: none;"><input type="file" id="file_{{ field.getAttribute("id") }}" /></span>
+	<div id="progress_{{ field.getAttribute("id") }}" class="progress" style="display: none;"><div class="bar" style="width: 0;">0%</div></div>
+	{{ field.openTag() }}{{ field.closeTag() }}
+	<button id="upload_{{ field.getAttribute("id") }}" class="btn" type="button"><i class="icon-upload"></i></button>
+</div>
+<script>
+	$(document).ready(function()
+	{
+		var input = $('#file_{{ field.getAttribute("id") }}');
+		var inputText = $('#{{ field.getAttribute("id") }}');
+		var inputButton = $('#upload_{{ field.getAttribute("id") }}');
+		var progress = $('#progress_{{ field.getAttribute("id") }}');
+
+		inputText.attr('readonly', 'readonly').val('{{ field.getValue() }}');
+
+		var onStart = function(uploadItem)
+		{
+			progress.removeClass('progress-success progress-warning').addClass('active progress-striped').slideDown().find('.bar').css('width', '0').html('0%');
+			inputText.val(uploadItem.file.name);
+			inputButton.attr('disabled', 'disabled');
+		};
+
+		var onProgress = function(uploadItem, percents)
+		{
+			progress.find('.bar').css('width', percents + '%').html(percents + '%');
+		};
+
+		var onComplete = function(uploadItem, successfully, data, errorCode)
+		{
+			if(successfully)
+			{
+				progress.removeClass('active progress-striped').addClass('progress-success').find('.bar').html('Файл успешно загружен.');
+
+				inputText.val(data.value);
+			}else
+			{
+				progress.removeClass('active progress-striped').addClass('progress-warning').find('.bar').html('Файл не загружен. (Ошибка #' + errorCode + ')');
+			}
+			inputButton.removeAttr('disabled');
+		};
+
+		fileUploader(input, inputButton, null, 1, '{{ route("_system_upload", {"uploader": field.getUploaderName()}) }}?params=' + encodeURIComponent({}), 'file', onStart, onProgress, onComplete)
+	});
+</script>

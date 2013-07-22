@@ -1,0 +1,4 @@
+{{ element.openTag() }}
+{{ element.getContent() }}
+{% for item in element.getItems() %}{{ item|raw }}{% endfor %}
+{{ element.closeTag() }}

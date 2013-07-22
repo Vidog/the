@@ -1,0 +1,8 @@
+{% set val = field.getValue() %}
+{% for value, caption in field.getValues() %}
+	{{ caption }}
+	<div class="pull-right">
+		<input type="radio" name={{ field.getName() }} value="{{ value }}
+		"{% if(val == value) %} checked="checked"{% endif %}>
+	</div>
+{% endfor %}

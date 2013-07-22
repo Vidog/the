@@ -1,0 +1,98 @@
+{% block before_main %}{% endblock %}
+
+{% block messages %}
+    {% for messageType, messages in form.getMessages() %}
+        {% for message in messages %}
+        <div class="alert alert-{{ messageType }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endfor %}
+{% endblock %}
+
+{% block open_tag %}
+	{{ form.openTag() }}
+{% endblock %}
+
+{% block main %}
+	{% for groupName, group in form.getFieldGroups() %}
+	<div>{{ group|raw }}</div>
+	{% endfor %}
+{% endblock %}
+
+{% block submit_button %}
+	{% if (form.getSubmitButtonCaption()) %}
+	<input type="submit" value="{{ form.getSubmitButtonCaption() }}" />
+	{% endif %}
+{% endblock %}
+
+{% block form_id %}
+	<input type="hidden" name="form_id" value="{{ form.getUniqueId() }}" />
+{% endblock %}
+
+{% block close_tag %}
+	{{ form.closeTag() }}
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+    function cloneInput(elem) {
+        var length = $("#" + $(elem).data('block')).find('div.fields').length;
+        var div = $("#" + $(elem).data('block') + " div.fields:nth-child(" + parseInt(length) + ")").clone();
+        var inputs = div.find('input, select, textarea');
+        inputs.val('');
+        inputs.each(function (i, el) {
+            var name = $(el).attr('name');
+            var matches = name.match(/([^\[]+)(\[(\d+)\])(.*)/);
+            var newIndex = (parseInt(matches[3]) + 1);
+            $(el).attr('name', matches[1] + '[' + newIndex  + ']' + matches[4]);
+
+            var val = $(el).data('default-value');
+            if(typeof val == 'undefined')
+            {
+                val = '';
+            }
+
+            $(el).val(val);
+
+            var id = $(el).attr('id');
+            var newId = id.replace(matches[1] + '_' + matches[3], matches[1] + '_' + newIndex);
+
+            var oldClass = $(el).attr("class");
+            var newClass = oldClass.replace(matches[1] + '_' + matches[3], matches[1] + '_' + newIndex);
+            $(el).attr('id', newId);
+            $(el).attr('class', newClass);
+            $(el).attr('data-index', newIndex);
+            $(el).data('index', newIndex);
+
+            $(el).parent().attr('id', 'collection_' + matches[1] + '_' + newIndex + '_');
+
+        });
+        elem.parent().before(div);
+    }
+
+    function removeInput(elem) {
+        elem.parent().parent().remove();
+    }
+</script>
+
+<script>
+    $(document).ready(function ()
+    {
+        $('form#{{ form.getAttribute("id") }}').on('change', '.THE_dependency', function()
+        {
+            var formData = $('form#{{ form.getAttribute("id") }}').serialize();
+            ajaxSend('{{ route("_system_dependency") }}', {form: '{{ form.getName() }}', data: formData, field: $(this).attr('name')}, function (d) {
+                for(var fieldGroupKey in d.field_groups)
+                {
+                    var fieldGroup = d.field_groups[fieldGroupKey];
+                    $('form#{{ form.getAttribute("id") }} #THE_field_group_' + fieldGroupKey).parent().html(fieldGroup);
+                }
+            });
+        }); 
+    });
+</script>
+{% endblock %}
+
+{% block after_main %}{% endblock %}
